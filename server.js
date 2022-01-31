@@ -19,7 +19,7 @@ function startPrompt() {
         type: 'list',
         name: 'menu',
         message: 'What would you like to do?',
-        choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add A Department', 'Add A Role', 'Add An Employee'],
+        choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add A Department', 'Add A Role', 'Add An Employee', 'Change Employee Role'],
     
     }).then(answer => {
         switch (answer.menu) {
@@ -40,6 +40,9 @@ function startPrompt() {
                 break;
             case 'Add An Employee':
                 addEmployee();
+                break;
+            case 'Change Employee Role':
+                changeEmployeeRole();
                 break;
         }
     })
@@ -195,7 +198,34 @@ function addEmployee() {
 });
 };
 
+function changeEmployeeRole() {
+    inquirer.prompt([
+        {
+            name: 'first_name',
+            type: 'input',
+            message: 'Please enter the first name of the employee you want to update in the database'
+        },
+        {
+            name: 'role_id',
+            type: 'number',
+            message: 'Please enter the new role id associated witht he employee you want to update in the database. (Numbers only.)'
+        }
+    ]).then(function (response) {
+        db.query('UPDATE employee SET role_id = ? WHERE first_name = ?', [response.role_id, response.first_name], function (err, data) {
+            if (err) throw err;
+            console.log('The new role entered has been added successfull to the database');
 
+            db.query(`SELECT * FROM employee`, (err, result) => {
+                if (err) {
+                    res.status(500).json({ error: err.message })
+                    startPrompt();
+                }
+                console.table(result);
+                startPrompt();
+            });
+        })
+});
+};
 startPrompt();
 // 7 functions total: view departments, roles, employees
 // able to add department, role, employee
